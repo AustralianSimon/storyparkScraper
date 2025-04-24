@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  storypark-scraper:
+    image: storyparkscraper:latest
+    container_name: storypark-scraper
+    environment:
+      # Required Variables
+      - SP_USER=${SP_USER}  # Your StoryPark username
+      - SP_PASS=${SP_PASS}  # Your StoryPark password
+      # Optional Variables
+      #- PAGE_TIMEOUT=${PAGE_TIMEOUT:-50000}  # Default: 50000ms
+      #- ALL_IMAGES=${ALL_IMAGES:-0}  # Default: 0 (only latest)
+      #- IMAGE_IDLE=${IMAGE_IDLE:-200000}  # Default: 200000ms
+    volumes:
+      - path/to/images/local:/app/images  # Mount directory for downloaded images
+    working_dir: /app
+    network_mode: bridge
