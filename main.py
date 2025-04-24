@@ -59,6 +59,7 @@ def scroll_until_stable(page):
             if not cf.get_all_images:
                 print('Scroll limit reached')
                 break
+            print('Getting all images, this will take a while...')
         previous_content = current_content
         counter += 1
 
