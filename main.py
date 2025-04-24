@@ -85,7 +85,7 @@ def download_story_images(page, id, save_dir):
     full_url = base_url + str(id)
     page.goto(full_url)
     time.sleep(20)
-    page.wait_for_load_state('networkidle', timeout=200000)
+    page.wait_for_load_state('networkidle', timeout=cf.images_idle)
 
     date_value = page.query_selector(cf.elems['date'])
     if date_value:
@@ -187,9 +187,9 @@ if __name__ == '__main__':
 
         for key in cf.children:
             print(f'Getting images for: {key}')
-            os.makedirs(name=key,exist_ok=True)
             current_path = os.getcwd()
             temp_path = os.path.join(current_path, 'images')
+            os.makedirs(name=key, exist_ok=True)
             temp_path = os.path.join(temp_path, key)
             list_folders = os.walk(temp_path)
 
@@ -207,9 +207,10 @@ if __name__ == '__main__':
 
         for key in cf.children:
             print(f'Set metadata for: {key}')
-            os.makedirs(name=key,exist_ok=True)
             current_path = os.getcwd()
-            temp_path = os.path.join(current_path, key)
+            temp_path = os.path.join(current_path, 'images')
+            os.makedirs(name=key, exist_ok=True)
+            temp_path = os.path.join(temp_path, key)
             list_folders = os.walk(temp_path)
             for folder in list_folders:
                 updateMetaData(folder)
