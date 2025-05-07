@@ -15,7 +15,7 @@ WORKDIR /app
 RUN pwd && ls -la
 
 COPY --chown=appuser:appuser entrypoint.sh /entrypoint.sh
-COPY --chown=appuser:appuser /app /app
+COPY --chown=appuser:appuser . /app
 
 RUN pwd && ls -la && echo "Files in /:"
 RUN chmod +x /entrypoint.sh
