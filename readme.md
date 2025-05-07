@@ -27,13 +27,12 @@ There is a dockerfile for those that like to build and run them. I will assume y
 
 ### .env file (optional)
 - Just create a .env file in the directory you clone the project to.
-- 
 
 ---
 
 ### Contributors
 
-Written most in python by Simon Wise.
+Written mostly in python by Simon Wise.
 
 ---
 

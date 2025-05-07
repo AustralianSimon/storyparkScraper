@@ -9,9 +9,9 @@ services:
       - SP_USER=${SP_USER}  # Your StoryPark username
       - SP_PASS=${SP_PASS}  # Your StoryPark password
       # Optional Variables
-      #- PAGE_TIMEOUT=${PAGE_TIMEOUT:-50000}  # Default: 50000ms
-      #- ALL_IMAGES=${ALL_IMAGES:-0}  # Default: 0 (only latest)
-      #- IMAGE_IDLE=${IMAGE_IDLE:-200000}  # Default: 200000ms
+      #- PAGE_TIMEOUT=  # Default: 50000ms
+      #- ALL_IMAGES=  # Default: 0 (only latest)
+      #- IMAGE_IDLE=  # Default: 200000ms
     volumes:
       - path/to/images/local:/app/images  # Mount directory for downloaded images
     working_dir: /app

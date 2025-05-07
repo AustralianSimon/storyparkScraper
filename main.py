@@ -9,22 +9,24 @@ import util_playwright
 import util_playwright as pw
 
 def open_website(page, url):
+    """
+    Opens the website.
+    """
     page.goto(url)
-    #print(page.title())
     if page.title() == 'Log in | Storypark':
-        #print('Log in')
         page.fill(cf.elems['user_field'], cf.creds['user'])
         page.fill(cf.elems['pass_field'], cf.creds['pass'])
         page.click(cf.elems['log_in_button'])
-    #page.click(cf.elems['story_page_button'])
 
 def get_children(page):
+    """
+    Reads all available children names from the side menu.
+    """
     print('get_children')
     open_website(page, cf.base_url)
     page.click(cf.elems['main_menu_button'])
     page.wait_for_timeout(1000)
     elements = page.query_selector_all(cf.elems['child_menu_item'])
-    print(elements)
     for element in elements:
         name_element = element.query_selector(cf.elems['child_name_label'])
         child_name = name_element.inner_text().strip()
@@ -37,9 +39,11 @@ def get_children(page):
         if child_code and child_name:
             print(f'Child: {child_code} - {child_name}')
             cf.children[child_name] = cf.stories_url.replace('CHILD_CODE', child_code)
-    print(cf.children)
 
 def scroll_until_stable(page):
+    """
+    Scrolls the page down until the bottom of the page or if the recent only limit is reached.
+    """
     previous_content = page.content()
     counter = 0
     while True:
@@ -47,11 +51,11 @@ def scroll_until_stable(page):
         page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
 
         # Wait for a brief period
-        page.wait_for_timeout(60000)  # Adjust the timeout value as needed
+        page.wait_for_timeout(cf.page_timeout)
 
         current_content = page.content()
 
-        # Check if the page content has changed
+        # Checking to see if the page content has changed or reached bottom of page
         if current_content == previous_content:
             print('Bottom of story page')
             break
@@ -64,8 +68,10 @@ def scroll_until_stable(page):
         counter += 1
 
 def collect_all_posts(page):
+    """
+    Gets all posts on the currently loaded parts of the page.
+    """
     elements = page.query_selector_all(cf.elems['post'])
-
     storypark_ids = []
     for element in elements:
         storypark_id = element.get_attribute('storyparkid')
@@ -74,6 +80,11 @@ def collect_all_posts(page):
     return storypark_ids
 
 def download_story_images(page, id, save_dir):
+    """
+    Downloads all story images from the post.
+    Will first check if the story has already been downloaded and if so skip.
+    Will then check if exif has been done if for some reason the date file is missing and skip.
+    """
     if os.path.exists(os.path.join(save_dir,'date.txt')):
         print('Previously dated')
         return
@@ -96,7 +107,6 @@ def download_story_images(page, id, save_dir):
     with open(os.path.join(save_dir, 'date.txt'), 'w') as f:
         f.write(date_value_content)
 
-
     elements = page.query_selector_all(cf.elems['post_images'])
     print(f'Image count: {len(elements)}')
     for element in elements:
@@ -114,17 +124,16 @@ def download_story_images(page, id, save_dir):
                 print(f"Downloaded: {full_filename}")
             else:
                 print(response.status_code)
-
-
-
-        except Exception as e:
-            print(e)
+        except:
             pass
 
     with open(os.path.join(save_dir, 'done.txt'), 'w') as f:
         f.write('d')
 
 def modify_exif_date(image_path, new_date):
+    """
+    Takes file path and date to modify the EXIF data to.
+    """
     print(f'Modifying EXIF for {image_path}')
     image = Image.open(image_path)
     exif_data = image._getexif()
@@ -137,7 +146,6 @@ def modify_exif_date(image_path, new_date):
         image.save(image_path, exif=image.info["exif"])
         return
     except Exception as e:
-        #no EXIF data
         print(f'No EXIF data: {e}')
         pass
     try:
@@ -154,17 +162,23 @@ def modify_exif_date(image_path, new_date):
         exif_bytes = piexif.dump(exif_dict)
         image.save(image_path, exif=exif_bytes)
 
-    except Exception as e:
-        #issue with adding EXIF
-        print(f'Broken during add: {e}')
+    except:
         pass
 
 def updateMetaData(folder):
+    """
+    Opens the subfolder and reads the date in the date.txt file.
+    Applies the date to EXIF data for all files.
+    """
     print(folder)
     date_new = ''
+    if 'done.txt' in folder[-1]:
+        print('Done.')
+        return
+
+    file_path = os.path.join(folder[0], 'date.txt')
     if 'date.txt' in folder[-1]:
         print('Has data.')
-        file_path = os.path.join(folder[0], 'date.txt')
         with open(file_path,'r') as f:
             date_new = f.readlines()
     else:
@@ -177,42 +191,45 @@ def updateMetaData(folder):
         if image_file.endswith('.txt'):
             continue
         modify_exif_date(os.path.join(folder[0],image_file),datetime_new.strftime("%Y:%m:%d %H:%M:%S"))
-
+    with open(file_path, 'w') as f:
+        f.write('d')
 
 if __name__ == '__main__':
+    """
+    Performs all the logic.
+    """
+    browser = pw.create_browser_instance(False)
+    page = pw.create_page_instance(browser)
+    get_children(page)
 
-        browser = pw.create_browser_instance(False)
-        page = pw.create_page_instance(browser)
-        get_children(page)
+    for key in cf.children:
+        print(f'Getting images for: {key}')
+        current_path = os.getcwd()
+        temp_path = os.path.join(current_path, 'images')
+        os.makedirs(name=temp_path, exist_ok=True)
+        temp_path = os.path.join(temp_path, key)
+        list_folders = os.walk(temp_path)
 
-        for key in cf.children:
-            print(f'Getting images for: {key}')
-            current_path = os.getcwd()
-            temp_path = os.path.join(current_path, 'images')
-            os.makedirs(name=key, exist_ok=True)
-            temp_path = os.path.join(temp_path, key)
-            list_folders = os.walk(temp_path)
-
-            open_website(page, cf.children[key])
-            scroll_until_stable(page)
-            time.sleep(10)
-            id_list = collect_all_posts(page)
-
-            for id in id_list:
-                os.makedirs(os.path.join(temp_path,id), exist_ok=True)
-                download_story_images(page, id, (os.path.join(temp_path,id)))
-
+        open_website(page, cf.children[key])
+        scroll_until_stable(page)
         time.sleep(10)
-        util_playwright.close_instance(browser)
+        id_list = collect_all_posts(page)
 
-        for key in cf.children:
-            print(f'Set metadata for: {key}')
-            current_path = os.getcwd()
-            temp_path = os.path.join(current_path, 'images')
-            os.makedirs(name=key, exist_ok=True)
-            temp_path = os.path.join(temp_path, key)
-            list_folders = os.walk(temp_path)
-            for folder in list_folders:
-                updateMetaData(folder)
+        for id in id_list:
+            os.makedirs(os.path.join(temp_path,id), exist_ok=True)
+            download_story_images(page, id, (os.path.join(temp_path,id)))
+
+    time.sleep(10)
+    util_playwright.close_instance(browser)
+
+    for key in cf.children:
+        print(f'Set metadata for: {key}')
+        current_path = os.getcwd()
+        temp_path = os.path.join(current_path, 'images')
+        os.makedirs(name=temp_path, exist_ok=True)
+        temp_path = os.path.join(temp_path, key)
+        list_folders = os.walk(temp_path)
+        for folder in list_folders:
+            updateMetaData(folder)
 
         print('Ending')

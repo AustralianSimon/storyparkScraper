@@ -3,10 +3,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-get_all_images = getenv('ALL_IMAGES', 0)
+get_all_images = bool(getenv('ALL_IMAGES', 0))
 
-page_timeout = getenv('PAGE_TIMEOUT', 60000)
-images_idle = getenv('IMAGE_IDLE', 200000)
+page_timeout = int(getenv('PAGE_TIMEOUT', 60000))
+images_idle = int(getenv('IMAGE_IDLE', 200000))
 
 base_url = 'https://app.storypark.com/users/sign_in'
 stories_url = 'https://app.storypark.com/children/CHILD_CODE/stories'

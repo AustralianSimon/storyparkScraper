@@ -179,13 +179,11 @@ cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/django
 
-#dos2unix
+#utils
 entrypoint.txt
 start-celery.txt
 start-web.txt
 dos2unix-run.py
 
-#ztemp
-ztemp/
-delete/
+#files
 images/
