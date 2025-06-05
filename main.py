@@ -193,6 +193,18 @@ def collect_all_notes(page):
     print(f'Storypark Note Count: {len(storypark_ids)}')
     return storypark_ids
 
+def collect_all_community_posts(page):
+    """
+    Gets all notes on the currently loaded parts of the page.
+    """
+    elements = page.query_selector_all(cf.elems['note'])
+    storypark_ids = []
+    for element in elements:
+        storypark_id = element.get_attribute('data-post')
+        storypark_ids.append(storypark_id)
+    print(f'Storypark Note Count: {len(storypark_ids)}')
+    return storypark_ids
+
 def download_note_images(page, id, save_dir):
     """
     Downloads all note images from the note.
@@ -300,7 +312,7 @@ def updateMetaData(folder):
     datetime_new = datetime_new.replace(hour=12, minute=0, second=0)
     print(datetime_new)
     for image_file in folder[-1]:
-        if image_file.endswith('.txt'):
+        if image_file.endswith('.txt') or image_file.endswith('.mp4'):
             continue
         modify_exif_date(os.path.join(folder[0],image_file),datetime_new.strftime("%Y:%m:%d %H:%M:%S"))
     with open(file_path, 'w') as f:
