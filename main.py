@@ -40,6 +40,8 @@ def get_children(page):
             print(f'Child: {child_code} - {child_name}')
             cf.children[child_name] = cf.stories_url.replace('CHILD_CODE', child_code)
 
+
+
 def scroll_until_stable(page):
     """
     Scrolls the page down until the bottom of the page or if the recent only limit is reached.
@@ -78,6 +80,16 @@ def collect_all_posts(page):
         storypark_ids.append(storypark_id)
     print(f'Storypark Post Count: {len(storypark_ids)}')
     return storypark_ids
+
+def collect_child_notes(page):
+    """
+    Reads all available note links from page.
+    """
+
+def collect_community_posts(page):
+    """
+    Reads all available community post links from page.
+    """
 
 def download_story_images(page, id, save_dir):
     """
@@ -329,10 +341,10 @@ if __name__ == '__main__':
 
         for id in id_list:
             os.makedirs(os.path.join(temp_path,id), exist_ok=True)
-            if os.path.exists(os.path.join(save_dir, 'date.txt')):
-                print('Previously dated')
-                continue
-            if os.path.exists(os.path.join(save_dir, 'done.txt')):
+            #if os.path.exists(os.path.join((os.path.join(temp_path, id)), 'date.txt')):
+            #    print('Previously dated')
+            #    continue
+            if os.path.exists(os.path.join((os.path.join(temp_path, id)), 'done.txt')):
                 print('Previously downloaded')
                 continue
 
