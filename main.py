@@ -85,12 +85,6 @@ def download_story_images(page, id, save_dir):
     Will first check if the story has already been downloaded and if so skip.
     Will then check if exif has been done if for some reason the date file is missing and skip.
     """
-    if os.path.exists(os.path.join(save_dir,'date.txt')):
-        print('Previously dated')
-        return
-    if os.path.exists(os.path.join(save_dir,'done.txt')):
-        print('Previously downloaded')
-        return
     print(save_dir)
     base_url = 'https://app.storypark.com/stories/'
     full_url = base_url + str(id)
@@ -136,12 +130,6 @@ def download_story_vids(page, id, save_dir):
     Will first check if the story has already been downloaded and if so skip.
     Will then check if exif has been done if for some reason the date file is missing and skip.
     """
-    if os.path.exists(os.path.join(save_dir,'date.txt')):
-        print('Previously dated')
-        return
-    if os.path.exists(os.path.join(save_dir,'done.txt')):
-        print('Previously downloaded')
-        return
     print(save_dir)
     base_url = 'https://app.storypark.com/stories/'
     full_url = base_url + str(id)
@@ -341,6 +329,13 @@ if __name__ == '__main__':
 
         for id in id_list:
             os.makedirs(os.path.join(temp_path,id), exist_ok=True)
+            if os.path.exists(os.path.join(save_dir, 'date.txt')):
+                print('Previously dated')
+                continue
+            if os.path.exists(os.path.join(save_dir, 'done.txt')):
+                print('Previously downloaded')
+                continue
+
             download_story_images(page, id, (os.path.join(temp_path,id)))
             download_story_vids(page, id, (os.path.join(temp_path, id)))
 
