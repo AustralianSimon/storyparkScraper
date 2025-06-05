@@ -16,7 +16,7 @@ def open_website(page, url):
     if page.title() == 'Log in | Storypark':
         page.fill(cf.elems['user_field'], cf.creds['user'])
         page.fill(cf.elems['pass_field'], cf.creds['pass'])
-        page.click(cf.elems['log_in_button'])
+        page.click(cf.elems['log_in_button'], timeout=60000)
 
 def get_children(page):
     """
@@ -24,7 +24,7 @@ def get_children(page):
     """
     print('get_children')
     open_website(page, cf.base_url)
-    page.click(cf.elems['main_menu_button'])
+    page.click(cf.elems['main_menu_button'], timeout=60000)
     page.wait_for_timeout(1000)
     elements = page.query_selector_all(cf.elems['child_menu_item'])
     for element in elements:
@@ -39,6 +39,8 @@ def get_children(page):
         if child_code and child_name:
             print(f'Child: {child_code} - {child_name}')
             cf.children[child_name] = cf.stories_url.replace('CHILD_CODE', child_code)
+
+
 
 def scroll_until_stable(page):
     """
@@ -79,18 +81,22 @@ def collect_all_posts(page):
     print(f'Storypark Post Count: {len(storypark_ids)}')
     return storypark_ids
 
+def collect_child_notes(page):
+    """
+    Reads all available note links from page.
+    """
+
+def collect_community_posts(page):
+    """
+    Reads all available community post links from page.
+    """
+
 def download_story_images(page, id, save_dir):
     """
     Downloads all story images from the post.
     Will first check if the story has already been downloaded and if so skip.
     Will then check if exif has been done if for some reason the date file is missing and skip.
     """
-    if os.path.exists(os.path.join(save_dir,'date.txt')):
-        print('Previously dated')
-        return
-    if os.path.exists(os.path.join(save_dir,'done.txt')):
-        print('Previously downloaded')
-        return
     print(save_dir)
     base_url = 'https://app.storypark.com/stories/'
     full_url = base_url + str(id)
@@ -129,6 +135,124 @@ def download_story_images(page, id, save_dir):
 
     with open(os.path.join(save_dir, 'done.txt'), 'w') as f:
         f.write('d')
+
+def download_story_vids(page, id, save_dir):
+    """
+    Downloads all story videos from the post.
+    Will first check if the story has already been downloaded and if so skip.
+    Will then check if exif has been done if for some reason the date file is missing and skip.
+    """
+    print(save_dir)
+    base_url = 'https://app.storypark.com/stories/'
+    full_url = base_url + str(id)
+    page.goto(full_url)
+    time.sleep(20)
+    page.wait_for_load_state('networkidle', timeout=cf.images_idle)
+
+    date_value = page.query_selector(cf.elems['date'])
+    if date_value:
+        date_value_content = date_value.text_content().strip()
+    else:
+        date_value_content = ''
+    print(date_value_content)
+    with open(os.path.join(save_dir, 'date.txt'), 'w') as f:
+        f.write(date_value_content)
+
+    elements = page.query_selector_all(cf.elems['post_vids'])
+    print(f'Vid count: {len(elements)}')
+    for element in elements:
+        print(f'Element: {element.get_attribute('src')}')
+        src_value = element.get_attribute('src')
+        try:
+            response = requests.get(src_value)
+            if response.status_code == 200:
+
+                filename = src_value.split('/')[-2]
+                full_filename = os.path.join(save_dir, filename) + '.mp4'
+
+                with open(full_filename, 'wb') as file:
+                    file.write(response.content)
+                print(f"Downloaded: {full_filename}")
+            else:
+                print(response.status_code)
+        except:
+            pass
+
+    with open(os.path.join(save_dir, 'done.txt'), 'w') as f:
+        f.write('d')
+
+def collect_all_notes(page):
+    """
+    Gets all notes on the currently loaded parts of the page.
+    """
+    elements = page.query_selector_all(cf.elems['note'])
+    storypark_ids = []
+    for element in elements:
+        storypark_id = element.get_attribute('data-post')
+        storypark_ids.append(storypark_id)
+    print(f'Storypark Note Count: {len(storypark_ids)}')
+    return storypark_ids
+
+def collect_all_community_posts(page):
+    """
+    Gets all notes on the currently loaded parts of the page.
+    """
+    elements = page.query_selector_all(cf.elems['note'])
+    storypark_ids = []
+    for element in elements:
+        storypark_id = element.get_attribute('data-post')
+        storypark_ids.append(storypark_id)
+    print(f'Storypark Note Count: {len(storypark_ids)}')
+    return storypark_ids
+
+def download_note_images(page, id, save_dir):
+    """
+    Downloads all note images from the note.
+    Will first check if the note has already been downloaded and if so skip.
+    Will then check if exif has been done if for some reason the date file is missing and skip.
+    """
+    if os.path.exists(os.path.join(save_dir,'date.txt')):
+        print('Previously dated')
+        return
+    if os.path.exists(os.path.join(save_dir,'done.txt')):
+        print('Previously downloaded')
+        return
+    print(save_dir)
+    base_url = 'https://app.storypark.com/activity/?note_id='
+    full_url = base_url + str(id)
+    page.goto(full_url)
+    time.sleep(20)
+    page.wait_for_load_state('networkidle', timeout=cf.images_idle)
+
+    date_value = page.query_selector(cf.elems['date'])
+    if date_value:
+        date_value_content = date_value.text_content().strip()
+    else:
+        date_value_content = ''
+    print(date_value_content)
+    with open(os.path.join(save_dir, 'date.txt'), 'w') as f:
+        f.write(date_value_content)
+
+    elements = page.query_selector_all(cf.elems['post_images'])
+    print(f'Image count: {len(elements)}')
+    for element in elements:
+        print(f'Element: {element.get_attribute('src')}')
+        src_value = element.get_attribute('src')
+        try:
+            response = requests.get(src_value)
+            if response.status_code == 200:
+
+                filename = src_value.split('/')[-2]
+                full_filename = os.path.join(save_dir, filename) + '.jpg'
+
+                with open(full_filename, 'wb') as file:
+                    file.write(response.content)
+                print(f"Downloaded: {full_filename}")
+            else:
+                print(response.status_code)
+        except:
+            pass
+
 
 def modify_exif_date(image_path, new_date):
     """
@@ -188,7 +312,7 @@ def updateMetaData(folder):
     datetime_new = datetime_new.replace(hour=12, minute=0, second=0)
     print(datetime_new)
     for image_file in folder[-1]:
-        if image_file.endswith('.txt'):
+        if image_file.endswith('.txt') or image_file.endswith('.mp4'):
             continue
         modify_exif_date(os.path.join(folder[0],image_file),datetime_new.strftime("%Y:%m:%d %H:%M:%S"))
     with open(file_path, 'w') as f:
@@ -217,7 +341,18 @@ if __name__ == '__main__':
 
         for id in id_list:
             os.makedirs(os.path.join(temp_path,id), exist_ok=True)
+            #if os.path.exists(os.path.join((os.path.join(temp_path, id)), 'date.txt')):
+            #    print('Previously dated')
+            #    continue
+            if os.path.exists(os.path.join((os.path.join(temp_path, id)), 'done.txt')):
+                print('Previously downloaded')
+                continue
+
             download_story_images(page, id, (os.path.join(temp_path,id)))
+            download_story_vids(page, id, (os.path.join(temp_path, id)))
+
+            with open(os.path.join((os.path.join(temp_path,id)), 'done.txt'), 'w') as f:
+                f.write('d')
 
     time.sleep(10)
     util_playwright.close_instance(browser)
