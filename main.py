@@ -258,36 +258,37 @@ def modify_exif_date(image_path, new_date):
     """
     Takes file path and date to modify the EXIF data to.
     """
-    print(f'Modifying EXIF for {image_path}')
+    print(f'Modifying EXIF for {image_path} to {new_date}')
     image = Image.open(image_path)
     exif_data = image._getexif()
 
+    #try:
+    #    for tag_id, value in exif_data.items():
+    #        tag_name = TAGS.get(tag_id, tag_id)
+    #        if tag_name == 'DateTimeOriginal':
+    #            exif_data[tag_id] = new_date
+    #    image.save(image_path, exif=image.info["exif"])
+    #    return
+    #except Exception as e:
+    #    print(f'No EXIF data: {e}')
+    #    pass
     try:
-        for tag_id, value in exif_data.items():
-            tag_name = TAGS.get(tag_id, tag_id)
-            if tag_name == 'DateTimeOriginal':
-                exif_data[tag_id] = new_date
-        image.save(image_path, exif=image.info["exif"])
-        return
-    except Exception as e:
-        print(f'No EXIF data: {e}')
-        pass
-    try:
-        exif_dict = {}
-
         if "exif" in image.info:
             exif_dict = piexif.load(image.info["exif"])
-
-        if "Exif" not in exif_dict:
-            exif_dict["Exif"] = {}
+        else:
+            exif_dict = {"0th": {}, "Exif": {}, "GPS": {}, "Interop": {}, "1st": {}, "thumbnail": None}
 
         exif_dict["Exif"][piexif.ExifIFD.DateTimeOriginal] = new_date
-
+        exif_dict["Exif"][piexif.ExifIFD.DateTimeDigitized] = new_date
+        exif_dict["0th"][piexif.ImageIFD.DateTime] = new_date
+        print(exif_dict)
         exif_bytes = piexif.dump(exif_dict)
         image.save(image_path, exif=exif_bytes)
 
-    except:
+    except Exception as e:
+        print(f'Issue on piexif: {e}')
         pass
+    print('Finished modify exif')
 
 def updateMetaData(folder):
     """
@@ -296,7 +297,7 @@ def updateMetaData(folder):
     """
     print(folder)
     date_new = ''
-    if 'done.txt' in folder[-1]:
+    if 'dated.txt' in folder[-1]:
         print('Done.')
         return
 
@@ -306,6 +307,7 @@ def updateMetaData(folder):
         with open(file_path,'r') as f:
             date_new = f.readlines()
     else:
+        print('No data in date file')
         return
     print(date_new[0])
     datetime_new = datetime.strptime(date_new[0].strip(),'%d %B %Y')
@@ -316,6 +318,9 @@ def updateMetaData(folder):
             continue
         modify_exif_date(os.path.join(folder[0],image_file),datetime_new.strftime("%Y:%m:%d %H:%M:%S"))
     with open(file_path, 'w') as f:
+        f.write('d')
+    file_path_dated = os.path.join(folder[0], 'dated.txt')
+    with open(file_path_dated, 'w') as f:
         f.write('d')
 
 if __name__ == '__main__':
@@ -341,9 +346,9 @@ if __name__ == '__main__':
 
         for id in id_list:
             os.makedirs(os.path.join(temp_path,id), exist_ok=True)
-            #if os.path.exists(os.path.join((os.path.join(temp_path, id)), 'date.txt')):
-            #    print('Previously dated')
-            #    continue
+            if os.path.exists(os.path.join((os.path.join(temp_path, id)), 'date.txt')):
+                print('Previously dated')
+                continue
             if os.path.exists(os.path.join((os.path.join(temp_path, id)), 'done.txt')):
                 print('Previously downloaded')
                 continue
