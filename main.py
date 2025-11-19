@@ -16,7 +16,7 @@ def open_website(page, url):
     if page.title() == 'Log in | Storypark':
         page.fill(cf.elems['user_field'], cf.creds['user'])
         page.fill(cf.elems['pass_field'], cf.creds['pass'])
-        page.click(cf.elems['log_in_button'], timeout=60000)
+        page.click(cf.elems['log_in_button'], timeout=int(os.getenv('PAGE_TIMEOUT')))
 
 def get_children(page):
     """
@@ -24,8 +24,8 @@ def get_children(page):
     """
     print('get_children')
     open_website(page, cf.base_url)
-    page.click(cf.elems['main_menu_button'], timeout=60000)
-    page.wait_for_timeout(1000)
+    page.click(cf.elems['main_menu_button'], timeout=int(os.getenv('PAGE_TIMEOUT')))
+    page.wait_for_timeout(int(os.getenv('PAGE_TIMEOUT')))
     elements = page.query_selector_all(cf.elems['child_menu_item'])
     for element in elements:
         name_element = element.query_selector(cf.elems['child_name_label'])
