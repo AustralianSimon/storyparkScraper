@@ -18,6 +18,7 @@ Assuming you have installed python. You can run this on your machine by doing th
 7. Run command: python main.py
 
 #### docker
+NB - there is a known issue with docker atm so I recommend you run via venv
 There is a dockerfile for those that like to build and run them. I will assume you know how to access your machine running docker.
 1. Open your Terminal
 2. Run command: git clone https://github.com/AustralianSimon/storyparkScraper.git StoryParkScraper
