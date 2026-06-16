@@ -187,3 +187,7 @@ dos2unix-run.py
 
 #files
 images/
+
+#extra
+.claude/
+./playwright-mcp/
