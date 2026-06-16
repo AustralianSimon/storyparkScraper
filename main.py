@@ -25,20 +25,28 @@ def get_children(page):
     print('get_children')
     open_website(page, cf.base_url)
     page.click(cf.elems['main_menu_button'], timeout=int(os.getenv('PAGE_TIMEOUT')))
-    page.wait_for_timeout(int(os.getenv('PAGE_TIMEOUT')))
-    elements = page.query_selector_all(cf.elems['child_menu_item'])
-    for element in elements:
-        name_element = element.query_selector(cf.elems['child_name_label'])
-        child_name = name_element.inner_text().strip()
+    page.wait_for_timeout(2000)
 
-        href = element.get_attribute('href')
-        child_code = None
-        if href and href.startswith('#child-navigation'):
-            child_code = href.replace('#child-navigation-', '')
+    child_entries = page.query_selector_all('div[data-action="child-menu"]')
+    for entry in child_entries:
+        name_el = entry.query_selector(cf.elems['child_name_label'])
+        if not name_el:
+            continue
+        child_name = name_el.inner_text().strip()
 
-        if child_code and child_name:
-            print(f'Child: {child_code} - {child_name}')
+        header = entry.query_selector('.v-list-group__header')
+        header.click()
+        page.wait_for_timeout(500)
+
+        stories_link = entry.query_selector('a[href*="/stories"]')
+        if stories_link:
+            href = stories_link.get_attribute('href')
+            child_code = href.split('/children/')[1].split('/')[0]
             cf.children[child_name] = cf.stories_url.replace('CHILD_CODE', child_code)
+            print(f'Child: {child_code} - {child_name}')
+
+        header.click()
+        page.wait_for_timeout(300)
 
 
 
@@ -99,10 +107,10 @@ def download_story_images(page, id, save_dir):
     """
     print(save_dir)
     base_url = 'https://app.storypark.com/stories/'
-    full_url = base_url + str(id)
+    full_url = base_url + str(id) + '/spa_show'
     page.goto(full_url)
-    time.sleep(20)
     page.wait_for_load_state('networkidle', timeout=cf.images_idle)
+    page.wait_for_selector(cf.elems['date'], timeout=30000)
 
     date_value = page.query_selector(cf.elems['date'])
     if date_value:
@@ -116,7 +124,7 @@ def download_story_images(page, id, save_dir):
     elements = page.query_selector_all(cf.elems['post_images'])
     print(f'Image count: {len(elements)}')
     for element in elements:
-        print(f'Element: {element.get_attribute('src')}')
+        print(f'Element: {element.get_attribute("src")}')
         src_value = element.get_attribute('src')
         try:
             response = requests.get(src_value)
@@ -144,10 +152,10 @@ def download_story_vids(page, id, save_dir):
     """
     print(save_dir)
     base_url = 'https://app.storypark.com/stories/'
-    full_url = base_url + str(id)
+    full_url = base_url + str(id) + '/spa_show'
     page.goto(full_url)
-    time.sleep(20)
     page.wait_for_load_state('networkidle', timeout=cf.images_idle)
+    page.wait_for_selector(cf.elems['date'], timeout=30000)
 
     date_value = page.query_selector(cf.elems['date'])
     if date_value:
@@ -161,7 +169,7 @@ def download_story_vids(page, id, save_dir):
     elements = page.query_selector_all(cf.elems['post_vids'])
     print(f'Vid count: {len(elements)}')
     for element in elements:
-        print(f'Element: {element.get_attribute('src')}')
+        print(f'Element: {element.get_attribute("src")}')
         src_value = element.get_attribute('src')
         try:
             response = requests.get(src_value)
@@ -309,6 +317,9 @@ def updateMetaData(folder):
     else:
         print('No data in date file')
         return
+    if not date_new or date_new[0].strip() in ('', 'd'):
+        print('Date not recorded, skipping.')
+        return
     print(date_new[0])
     datetime_new = datetime.strptime(date_new[0].strip(),'%d %B %Y')
     datetime_new = datetime_new.replace(hour=12, minute=0, second=0)
@@ -317,8 +328,6 @@ def updateMetaData(folder):
         if image_file.endswith('.txt') or image_file.endswith('.mp4'):
             continue
         modify_exif_date(os.path.join(folder[0],image_file),datetime_new.strftime("%Y:%m:%d %H:%M:%S"))
-    with open(file_path, 'w') as f:
-        f.write('d')
     file_path_dated = os.path.join(folder[0], 'dated.txt')
     with open(file_path_dated, 'w') as f:
         f.write('d')

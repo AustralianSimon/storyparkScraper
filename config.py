@@ -17,15 +17,15 @@ elems = {
     'user_field':"#user_email",
     'pass_field':"#user_password",
     'post':'div[data-action="show-post"]',
-    'post_images':'div[class="rounded-lg mb-3 image-container"] img',
-    'post_vids':"//video[@controls='controls' and contains(@class, 'mb-3 rounded-lg black')]",
+    'post_images':'img[alt="Story media"]',
+    'post_vids':'video[controls]',
     'note':"//a[@data-action='show-post' and @data-collection='stories' and @data-type='story']",
     'community_post':"//a[contains(@href, 'community_posts')]",
     'note_images':'img[data-action="zoom-media"]',
-    'date':'div[class="date-box"] div[class="text-h6 grey2--text text--darken-1 font-weight-regular"]',
-    'main_menu_button':'a[data-action="open-menu"]',
-    'child_menu_item':'a.sp-c-nav-drawer__link.accordion-toggle[data-toggle="menu"]',
-    'child_name_label':'span.sp-c-nav-drawer__link-label',
+    'date':'div.flex-shrink-0.text-h6.grey2--text.text--darken-1.font-weight-regular',
+    'main_menu_button':'//button[@type="button" and contains(@class, "v-btn") and .//span[text()="Menu"]]',
+    'child_menu_item':'div[data-action="child-menu"] .v-list-group__header',
+    'child_name_label':'.v-list-item__title[data-action="open-child-menu"]',
 }
 
 children = {
