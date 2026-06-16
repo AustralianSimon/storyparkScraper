@@ -190,4 +190,4 @@ images/
 
 #extra
 .claude/
-./playwright-mcp/
+.playwright-mcp/
