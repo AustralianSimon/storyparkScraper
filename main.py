@@ -25,7 +25,7 @@ def get_children(page):
     print('get_children')
     open_website(page, cf.base_url)
     page.click(cf.elems['main_menu_button'], timeout=int(os.getenv('PAGE_TIMEOUT')))
-    page.wait_for_timeout(2000)
+    page.wait_for_selector('div[data-action="child-menu"]', timeout=int(os.getenv('PAGE_TIMEOUT')))
 
     child_entries = page.query_selector_all('div[data-action="child-menu"]')
     for entry in child_entries:
@@ -36,7 +36,7 @@ def get_children(page):
 
         header = entry.query_selector('.v-list-group__header')
         header.click()
-        page.wait_for_timeout(500)
+        page.wait_for_selector('a[href*="/stories"]', timeout=int(os.getenv('PAGE_TIMEOUT')))
 
         stories_link = entry.query_selector('a[href*="/stories"]')
         if stories_link:
