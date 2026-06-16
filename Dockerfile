@@ -42,6 +42,8 @@ WORKDIR /app
 COPY --chown=appuser:appuser entrypoint.sh /entrypoint.sh
 COPY --chown=appuser:appuser . /app
 
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
 RUN pwd && ls -la
 
 RUN pip install --no-cache-dir -r /app/requirements.txt
@@ -55,5 +57,6 @@ RUN chmod +x /entrypoint.sh
 USER appuser
 RUN python -m playwright install chromium
 
+#EXPOSE 8000
 EXPOSE 8000
 CMD ["/bin/bash", "/entrypoint.sh"]
