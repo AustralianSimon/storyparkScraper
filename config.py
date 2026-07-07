@@ -23,7 +23,7 @@ elems = {
     'community_post':"//a[contains(@href, 'community_posts')]",
     'note_images':'img[data-action="zoom-media"]',
     'date':'div.flex-shrink-0.text-h6.grey2--text.text--darken-1.font-weight-regular',
-    'main_menu_button':'//button[@type="button" and contains(@class, "v-btn") and .//span[text()="Menu"]]',
+    'main_menu_button':'//button[contains(@class, "v-btn") and not(ancestor::nav) and .//span[contains(., "Menu")]]',
     'child_menu_item':'div[data-action="child-menu"] .v-list-group__header',
     'child_name_label':'.v-list-item__title[data-action="open-child-menu"]',
 }

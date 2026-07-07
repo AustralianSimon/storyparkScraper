@@ -16,7 +16,8 @@ def open_website(page, url):
     if page.title() == 'Log in | Storypark':
         page.fill(cf.elems['user_field'], cf.creds['user'])
         page.fill(cf.elems['pass_field'], cf.creds['pass'])
-        page.click(cf.elems['log_in_button'], timeout=int(os.getenv('PAGE_TIMEOUT')))
+        page.click(cf.elems['log_in_button'], timeout=int(cf.page_timeout))
+        page.wait_for_load_state('networkidle', timeout=int(cf.page_timeout))
 
 def get_children(page):
     """
@@ -24,8 +25,8 @@ def get_children(page):
     """
     print('get_children')
     open_website(page, cf.base_url)
-    page.click(cf.elems['main_menu_button'], timeout=int(os.getenv('PAGE_TIMEOUT')))
-    page.wait_for_selector('div[data-action="child-menu"]', timeout=int(os.getenv('PAGE_TIMEOUT')))
+    page.click(cf.elems['main_menu_button'], timeout=int(cf.page_timeout))
+    page.wait_for_selector('div[data-action="child-menu"]', timeout=int(cf.page_timeout))
 
     child_entries = page.query_selector_all('div[data-action="child-menu"]')
     for entry in child_entries:
@@ -36,7 +37,7 @@ def get_children(page):
 
         header = entry.query_selector('.v-list-group__header')
         header.click()
-        page.wait_for_selector('a[href*="/stories"]', timeout=int(os.getenv('PAGE_TIMEOUT')))
+        page.wait_for_selector('a[href*="/stories"]', timeout=int(cf.page_timeout))
 
         stories_link = entry.query_selector('a[href*="/stories"]')
         if stories_link:
@@ -110,7 +111,7 @@ def download_story_images(page, id, save_dir):
     full_url = base_url + str(id) + '/spa_show'
     page.goto(full_url)
     page.wait_for_load_state('networkidle', timeout=cf.images_idle)
-    page.wait_for_selector(cf.elems['date'], timeout=30000)
+    page.wait_for_selector(cf.elems['date'], timeout=int(cf.page_timeout))
 
     date_value = page.query_selector(cf.elems['date'])
     if date_value:
@@ -155,7 +156,7 @@ def download_story_vids(page, id, save_dir):
     full_url = base_url + str(id) + '/spa_show'
     page.goto(full_url)
     page.wait_for_load_state('networkidle', timeout=cf.images_idle)
-    page.wait_for_selector(cf.elems['date'], timeout=30000)
+    page.wait_for_selector(cf.elems['date'], timeout=int(cf.page_timeout))
 
     date_value = page.query_selector(cf.elems['date'])
     if date_value:
