@@ -51,6 +51,7 @@ RUN pwd && ls -la && echo "Files in /:"
 RUN bash -c 'if [ -f "entrypoint.sh" ]; then echo "entrypoint.sh exists"; else echo "entrypoint.sh not found"; fi'
 
 RUN chmod +x /entrypoint.sh
+RUN mkdir -p /app/session && chown appuser:appuser /app/session
 
 # Install Playwright browsers as appuser so they land in /home/appuser/.cache
 USER appuser

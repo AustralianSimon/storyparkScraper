@@ -25,6 +25,19 @@ There is a dockerfile for those that like to build and run them. I will assume y
 4. Run command: sudo docker build -t storyparkscraper:latest .
 5. Run using docker-compose such as example in project.
 
+### Captcha & MFA
+Storypark now uses a captcha and MFA on login. When the scraper needs you to complete either, it prints a message and starts a login assist page at http://localhost:8000 (or http://<docker-host>:8000 for docker - make sure port 8000 is published as in the docker-compose example).
+1. Open the page in your browser, you will see a live view of the scraper's browser.
+2. Click on the screenshot to click in the scraper's browser (e.g. captcha image tiles, the MFA code field).
+3. Type into the text box and press Type / Enter to send text such as your MFA code.
+4. Once logged in the scraper continues automatically. If it does not, press "I'm logged in - continue".
+
+The login session is saved to `session/storage_state.json` (mount `/app/session` in docker) so you should only need to do this when the session expires. Keep this file private, it grants access to your account.
+
+Running outside docker you can also set `HEADLESS=0` to show the browser window and complete the login directly in it.
+
+Note the login assist page has no password, only expose port 8000 on a trusted network.
+
 ### .env file (optional)
 - Just create a .env file in the directory you clone the project to.
 

@@ -5,19 +5,43 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 
 import config as cf
+import auth_assist
 import util_playwright
 import util_playwright as pw
 
+def needs_login(page):
+    """
+    True while on a sign in / MFA page rather than the app itself.
+    """
+    if '/users/' in page.url:
+        return True
+    pass_field = page.query_selector(cf.elems['pass_field'])
+    return bool(pass_field and pass_field.is_visible())
+
 def open_website(page, url):
     """
-    Opens the website.
+    Opens the website, logging in if required.
+    If a captcha or MFA prompt appears the user is asked to complete it via the login assist web page.
     """
     page.goto(url)
-    if page.title() == 'Log in | Storypark':
+    if not needs_login(page):
+        return
+    if page.query_selector(cf.elems['user_field']):
         page.fill(cf.elems['user_field'], cf.creds['user'])
         page.fill(cf.elems['pass_field'], cf.creds['pass'])
         page.click(cf.elems['log_in_button'], timeout=int(cf.page_timeout))
+        try:
+            page.wait_for_url(lambda u: '/users/sign_in' not in u, timeout=15000)
+            page.wait_for_load_state('networkidle', timeout=int(cf.page_timeout))
+        except Exception:
+            pass
+    if needs_login(page):
+        auth_assist.wait_for_user(page, lambda p: not needs_login(p),
+                                  host=cf.auth_assist_host, port=cf.auth_assist_port, timeout=cf.auth_timeout)
         page.wait_for_load_state('networkidle', timeout=int(cf.page_timeout))
+    util_playwright.save_session(page.context, cf.session_file)
+    if url != cf.base_url:
+        page.goto(url)
 
 def get_children(page):
     """
@@ -190,6 +214,25 @@ def download_story_vids(page, id, save_dir):
     with open(os.path.join(save_dir, 'done.txt'), 'w') as f:
         f.write('d')
 
+def download_story_text(page, id, save_dir):
+    print(save_dir)
+    base_url = 'https://app.storypark.com/stories/'
+    full_url = base_url + str(id) + '/spa_show'
+    page.goto(full_url)
+    page.wait_for_load_state('networkidle', timeout=cf.images_idle)
+    page.wait_for_selector(cf.elems['date'], timeout=int(cf.page_timeout))
+
+    title_elem = page.query_selector(cf.elems['story_title'])
+    title_text = title_elem.text_content().strip() if title_elem else ''
+
+    text_elems = page.query_selector_all(cf.elems['story_text'])
+    body_parts = [e.text_content().strip() for e in text_elems if e.text_content().strip()]
+    body_text = '\n\n'.join(body_parts)
+
+    with open(os.path.join(save_dir, 'story.txt'), 'w', encoding='utf-8') as f:
+        f.write(f'Title: {title_text}\n\nBody: {body_text}')
+    print(f'Saved story text for {id}')
+
 def collect_all_notes(page):
     """
     Gets all notes on the currently loaded parts of the page.
@@ -337,7 +380,7 @@ if __name__ == '__main__':
     """
     Performs all the logic.
     """
-    browser = pw.create_browser_instance(False)
+    browser = pw.create_browser_instance(not cf.headless, cf.session_file)
     page = pw.create_page_instance(browser)
     get_children(page)
 
@@ -365,6 +408,7 @@ if __name__ == '__main__':
 
             download_story_images(page, id, (os.path.join(temp_path,id)))
             download_story_vids(page, id, (os.path.join(temp_path, id)))
+            download_story_text(page, id, (os.path.join(temp_path, id)))
 
             with open(os.path.join((os.path.join(temp_path,id)), 'done.txt'), 'w') as f:
                 f.write('d')

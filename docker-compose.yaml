@@ -12,7 +12,12 @@ services:
       #- PAGE_TIMEOUT=  # Default: 50000ms
       #- ALL_IMAGES=  # Default: 0 (only latest)
       #- IMAGE_IDLE=  # Default: 200000ms
+      #- AUTH_TIMEOUT=  # Default: 600 seconds to complete captcha/MFA
+      #- AUTH_ASSIST_PORT=  # Default: 8000
+    ports:
+      - "8000:8000"  # Login assist page for captcha/MFA (http://<docker-host>:8000)
     volumes:
       - path/to/images/local:/app/images  # Mount directory for downloaded images
+      - path/to/session/local:/app/session  # Saved login session so captcha/MFA is not needed every run
     working_dir: /app
     network_mode: bridge
