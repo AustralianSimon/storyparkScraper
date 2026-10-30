@@ -192,3 +192,4 @@ images/
 .claude/
 .playwright-mcp/
 .mcp.json
+session/
