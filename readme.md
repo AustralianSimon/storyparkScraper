@@ -2,6 +2,11 @@
 
 ---
 
+### Archive Notice
+I'm no longer using this tool as my kids are using platforms elsewhere. I want this code to remain available for others to fork and utilise.
+
+---
+
 ### What does this do?
 Simply downloads all story photos from your child's story posts in storypark to put into a photo album or other tool. Please note this indescriminately downloads images so you will need to filter out pictures your child is not in after download.
 
